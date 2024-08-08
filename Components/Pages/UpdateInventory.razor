@@ -1,0 +1,138 @@
+﻿@page "/update-inventory"
+@using ResturantManagmentSystem.Components
+
+<h1>Update Inventory</h1>
+
+<div>
+    <h3 class="section-title">Add New Item</h3>
+    <div class="add-item-form">
+        <label for="itemName">Item Name:</label>
+        <input id="itemName" @bind="newItemName" />
+
+        <label for="itemPrice">Item Price:</label>
+        <input id="itemPrice" type="number" @bind="newItemPrice" />
+
+        <button @onclick="AddNewItem">Add Item</button>
+    </div>
+
+    <h3 class="section-title">Modify Existing Items</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in menuItems)
+            {
+                <tr>
+                    @if (item.IsEditing)
+                    {
+                        <td><input @bind="item.Name" /></td>
+                        <td><input type="number" @bind="item.Cost" /></td>
+                        <td>
+                            <button @onclick="() => SaveItem(item)">Save</button>
+                            <button @onclick="() => CancelEdit(item)">Cancel</button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@item.Name</td>
+                        <td>@item.Cost.ToString("C")</td>
+                        <td>
+                            <button @onclick="() => EditItem(item)">Edit</button>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .section-title {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .add-item-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 30px; /* Add space between Add New Item form and Modify Existing Items section */
+    }
+
+    .table th, .table td {
+        padding: 10px;
+    }
+</style>
+
+
+
+
+@code {
+    //newItemName and NewItemPrice are variables that hold the values entered in the page when creating new items.
+    // We then call the menuItems list to see the current items that are fetched from the database
+    private string newItemName;
+    private double newItemPrice;
+    private List<ResturantManagmentSystem.Components.MenuItem> menuItems = new List<ResturantManagmentSystem.Components.MenuItem>();
+    private DatabaseHelper dbHelper;
+
+    protected override void OnInitialized()
+    {
+        dbHelper = new DatabaseHelper("ResturantDB");
+        menuItems = dbHelper.GetMenuItems();
+    }
+
+    private void AddNewItem()
+    {
+        // Here we add a new item to our database
+        dbHelper.AddMenuItem(newItemName, newItemPrice, string.Empty); // Here we assume that the string is empty for simplicity 
+
+        // Here we reload the menu items
+        menuItems = dbHelper.GetMenuItems();
+
+        // Reset form
+        newItemName = string.Empty;
+        newItemPrice = 0;
+    }
+
+    // This method is to enable edditing to an item in the database by setting the property to true.
+    private void EditItem(ResturantManagmentSystem.Components.MenuItem item)
+    {
+        item.IsEditing = true;
+    }
+
+    // Here we save the updated item to the databse
+    private void SaveItem(ResturantManagmentSystem.Components.MenuItem item)
+    {
+        // Here is where we update an item in the database
+        dbHelper.UpdateMenuItem(item.ItemId, item.Name, item.Cost, item.Description);
+
+        // End edit mode by setting the property to false
+        item.IsEditing = false;
+
+        // Reload menu items to update the changes
+        menuItems = dbHelper.GetMenuItems();
+    }
+
+    //Here we create a method to cancel the edit by changing the isEditing propert to false, if needed and not update the changes.
+
+    private void CancelEdit(ResturantManagmentSystem.Components.MenuItem item)
+    {
+        item.IsEditing = false;
+        menuItems = dbHelper.GetMenuItems(); // Reload items to discard changes
+    }
+}
+
+<style>
+    .title-spacing {
+        margin-bottom: 20px;
+    }
+
+    .table th, .table td {
+        padding: 10px;
+    }
+</style>

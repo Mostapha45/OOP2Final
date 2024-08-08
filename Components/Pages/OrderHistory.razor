@@ -1,0 +1,65 @@
+﻿@page "/order-history"
+@using ResturantManagmentSystem.Components
+@inject NavigationManager NavigationManager
+
+<h1>Order History</h1>
+
+@if (orderHistory == null || orderHistory.Count == 0)
+{
+    <p>No orders found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Table Number</th>
+                <th>Customer Name</th>
+                <th>Items</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in orderHistory)
+            {
+                <tr>
+                    <td>@order.OrderId</td>
+                    <td>@order.TableNumber</td>
+                    <td>@order.CustomerName</td>
+                    <td>@string.Join(", ", order.Items)</td>
+                    <td>
+                        <button @onclick="() => RemoveOrder(order.OrderId)">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<button @onclick="NavigateBack">Back</button>
+
+@code {
+    // Here we call the orderHistory list which recieves the Order history items from the database
+    private List<OrderHistoryItem> orderHistory;
+
+    protected override void OnInitialized()
+    {
+        var dbHelper = new DatabaseHelper("ResturantDB");
+        orderHistory = dbHelper.GetOrderHistory();
+    }
+
+    //Here we remove an order from the order history using the order id, we then refresh the list by getting the new order history from the databse.
+    private void RemoveOrder(int orderId)
+    {
+        var dbHelper = new DatabaseHelper("ResturantDB");
+        dbHelper.DeleteOrderHistory(orderId);
+        orderHistory = dbHelper.GetOrderHistory(); 
+    }
+
+    // Here we set it up so there is functionallity for the back button that is shown when viewing order history to go back to the order creating page.
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/create-order");
+    }
+}

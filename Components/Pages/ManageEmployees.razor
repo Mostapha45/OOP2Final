@@ -1,0 +1,151 @@
+﻿@page "/manage-employees"
+@using ResturantManagmentSystem.Components
+
+<h1>Manage Employees</h1>
+
+<div>
+    <h3 class="section-title">Add New Employee</h3>
+    <div class="add-employee-form">
+        <label for="firstName">First Name:</label>
+        <input id="firstName" @bind="newEmployee.FirstName" />
+
+        <label for="lastName">Last Name:</label>
+        <input id="lastName" @bind="newEmployee.LastName" />
+
+        <label for="email">Email:</label>
+        <input id="email" @bind="newEmployee.Email" />
+
+        <label for="phone">Phone:</label>
+        <input id="phone" @bind="newEmployee.Phone" />
+
+        <label for="position">Position:</label>
+        <input id="position" @bind="newEmployee.Position" />
+
+        <button @onclick="AddEmployee">Add Employee</button>
+    </div>
+
+    <h3 class="section-title">Modify Existing Employees</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Position</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    @if (employee.IsEditing)
+                    {
+                        <td><input @bind="employee.FirstName" /></td>
+                        <td><input @bind="employee.LastName" /></td>
+                        <td><input @bind="employee.Email" /></td>
+                        <td><input @bind="employee.Phone" /></td>
+                        <td><input @bind="employee.Position" /></td>
+                        <td>
+                            <button @onclick="() => SaveEmployee(employee)">Save</button>
+                            <button @onclick="() => CancelEdit(employee)">Cancel</button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@employee.FirstName</td>
+                        <td>@employee.LastName</td>
+                        <td>@employee.Email</td>
+                        <td>@employee.Phone</td>
+                        <td>@employee.Position</td>
+                        <td>
+                            <button @onclick="() => EditEmployee(employee)">Edit</button>
+                            <button @onclick="() => RemoveEmployee(employee.UserId)">Remove</button>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .section-title {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .add-employee-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 30px; /* Add space between Add New Employee form and Modify Existing Employees section */
+    }
+
+    .table th, .table td {
+        padding: 10px;
+    }
+</style>
+
+
+@code {
+    //Here we have the newemployee field which is a user object which holds the values that are entered in the form when adding a new employee
+    //Employees is a list that takes the current employees which are in the database
+    //DBHelper is an instance of databasehelper class used to interact with the databse thats been created 
+    private User newEmployee = new User();
+    private List<User> employees = new List<User>();
+    private DatabaseHelper dbHelper;
+
+    protected override void OnInitialized()
+    {
+        dbHelper = new DatabaseHelper("ResturantDB");
+        employees = dbHelper.GetUsers();
+    }
+
+    //Here is how we the employee gets added to the database with their respective information and then it is updated to reflect changes while using the AddUser method from the databasehelper class
+    private void AddEmployee()
+    {
+        dbHelper.AddUser(newEmployee.FirstName, newEmployee.LastName, newEmployee.Email, newEmployee.Phone, newEmployee.Position);
+        employees = dbHelper.GetUsers();
+        newEmployee = new User(); // Reset the form
+    }
+
+    //Here is how we edit employees that are already in the databse by setting their is editing property to true.
+    private void EditEmployee(User employee)
+    {
+        employee.IsEditing = true;
+    }
+
+    // Here is how we save an employee with their respective updated information and then assign it to employee whom we have selected this uses the UpdateUser method from the databasehelper class
+    private void SaveEmployee(User employee)
+    {
+        dbHelper.UpdateUser(employee.UserId, employee.FirstName, employee.LastName, employee.Email, employee.Phone, employee.Position);
+        employee.IsEditing = false;
+        employees = dbHelper.GetUsers();
+    }
+
+    //Here is how we cancel an in progress edit of a employees information which we set the isediting property to false which cancels the process and then reloads the users to remove the changes.
+    private void CancelEdit(User employee)
+    {
+        employee.IsEditing = false;
+        employees = dbHelper.GetUsers(); 
+    }
+
+    //Here is how we remove an employee from the database using the db helper which calls the DeleteUser method to use the databasehelper class with the id of the user and then updating the records in the Users table 
+    private void RemoveEmployee(int id)
+    {
+        dbHelper.DeleteUser(id);
+        employees = dbHelper.GetUsers();
+    }
+}
+
+<style>
+    .title-spacing {
+        margin-bottom: 20px;
+    }
+
+    .table th, .table td {
+        padding: 10px;
+    }
+</style>

@@ -1,0 +1,196 @@
+﻿@page "/create-order"
+@using ResturantManagmentSystem.Components
+@inject NavigationManager NavigationManager
+
+<h1>Create Order</h1>
+
+<div>
+    <div class="order-inputs">
+        <div>
+            <label for="customerName">Customer Name:</label>
+            <input id="customerName" @bind="customerName" />
+        </div>
+
+        <div style="margin-left: 20px;">
+            <label for="tableNumber">Table Number:</label>
+            <input id="tableNumber" type="number" style="width: 50px;" @bind="tableNumber" @oninput="ValidateTableNumber" />
+            @if (isTableNumberInvalid)
+            {
+                <span style="color: red;">Number must be 1-50</span>
+            }
+        </div>
+
+        <div style="margin-left: 20px;">
+            <label for="itemName">Select Item:</label>
+            <select id="itemName" @bind="selectedItemId">
+                <option value="">Select an item</option>
+                @foreach (var item in availableMenuItems)
+                {
+                    <option value="@item.ItemId">@item.Name</option>
+                }
+            </select>
+            <button @onclick="AddSelectedItem">Add Item</button>
+        </div>
+    </div>
+
+    <h3>Order Items</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in orderItems)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Price.ToString("C")</td>
+                    <td>@item.Quantity</td>
+                    <td>
+                        <button @onclick="() => DecreaseQuantity(item)">-</button>
+                        <button @onclick="() => IncreaseQuantity(item)">+</button>
+                        <button @onclick="() => RemoveItem(item)">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Total: @orderTotal.ToString("C")</h3>
+
+    <button @onclick="CompleteOrder">Complete Order</button>
+    <button @onclick="NavigateToOrderHistory">Order History</button>
+</div>
+
+<style>
+    /* cSS styling to ensure a nicer layout and more visually appealing between the Titles and Inputs */
+    .order-inputs {
+        display: flex;
+        align-items: center;
+        margin-top: 20px; 
+        margin-bottom: 20px; 
+    }
+
+    .table {
+        margin-top: 20px; /* Add some margin to the table for better spacing */
+    }
+</style>
+
+
+@code {
+    //Here all the variables are being declared and then the we use the menuItems list which is fetched from the database as well as adding a list of items to the orders now and holding the total cost for the order 
+    private string customerName;
+    private int tableNumber;
+    private bool isTableNumberInvalid;
+    private int selectedItemId;
+    private List<ResturantManagmentSystem.Components.MenuItem> availableMenuItems = new List<ResturantManagmentSystem.Components.MenuItem>();
+    private List<OrderItem> orderItems = new List<OrderItem>();
+    private double orderTotal;
+
+    protected override void OnInitialized()
+    {
+        var dbHelper = new DatabaseHelper("ResturantDB");
+        availableMenuItems = dbHelper.GetMenuItems();
+    }
+
+    //Here we will add the selected item to the menu we find the item from avaliableMenuItems using the selectItemId
+    private void AddSelectedItem()
+    {
+        var selectedItem = availableMenuItems.FirstOrDefault(item => item.ItemId == selectedItemId);
+        if (selectedItem != null)
+        {
+            // we then check if the item is already in the order and if it is we increase it's quantity
+            var existingItem = orderItems.FirstOrDefault(i => i.Name == selectedItem.Name);
+            if (existingItem != null)
+            {
+                existingItem.Quantity++;
+            }
+            else
+            {
+                //but if the item is not in the order then we create new order item and add it to the OrderItems list
+                var newItem = new OrderItem { Name = selectedItem.Name, Price = selectedItem.Cost, Quantity = 1 };
+                orderItems.Add(newItem);
+            }
+            orderTotal += selectedItem.Cost;
+            selectedItemId = 0; // Reset selection
+        }
+    }
+
+    //here we ways to update the order total accordingly by either decreasing or increasing the quanity of the specified item
+    private void IncreaseQuantity(OrderItem item)
+    {
+        item.Quantity++;
+        orderTotal += item.Price;
+    }
+
+    private void DecreaseQuantity(OrderItem item)
+    {
+        if (item.Quantity > 1)
+        {
+            item.Quantity--;
+            orderTotal -= item.Price;
+        }
+    }
+
+    // Here we have our RemoveItem method which will removed the specified item from the orderItems and then update the orderTotal accordingly
+    private void RemoveItem(OrderItem item)
+    {
+        orderTotal -= item.Price * item.Quantity;
+        orderItems.Remove(item);
+    }
+
+    //Hhere we have the complete order method which will complete the order by saving it to the database
+    private void CompleteOrder()
+    {
+        // here we validate if the table number is between 1-50 
+        if (tableNumber < 1 || tableNumber > 50)
+        {
+            // if the table number is invalid here is where the order will not be able to be completed
+            isTableNumberInvalid = true;
+            return;
+        }
+
+        // Save order to the database
+        var dbHelper = new DatabaseHelper("ResturantDB");
+        dbHelper.AddOrder(tableNumber, customerName, orderItems.Select(item => $"{item.Name} ({item.Quantity})").ToList());
+
+        // Reset order
+        customerName = string.Empty;
+        tableNumber = 0;
+        orderItems.Clear();
+        orderTotal = 0;
+        isTableNumberInvalid = false;
+    }
+
+    //Here we have the method to navigate to order history after clicking the button, which will proceed to send you the order history page
+    private void NavigateToOrderHistory()
+    {
+        NavigationManager.NavigateTo("/order-history");
+    }
+
+
+    //Here we have the method that is created to ensure the number for the tables is between 1-50 
+    private void ValidateTableNumber(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int value))
+        {
+            isTableNumberInvalid = value < 1 || value > 50;
+        }
+        else
+        {
+            //here it checks if the table number is invalid 
+            isTableNumberInvalid = true;
+        }
+    }
+
+    private class OrderItem
+    {
+        public string Name { get; set; }
+        public double Price { get; set; }
+        public int Quantity { get; set; }
+    }
+}
