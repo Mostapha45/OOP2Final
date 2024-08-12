@@ -43,6 +43,7 @@
                         <td>@item.Cost.ToString("C")</td>
                         <td>
                             <button @onclick="() => EditItem(item)">Edit</button>
+                            <button @onclick="() => RemoveItem(item)">Remove</button>
                         </td>
                     }
                 </tr>
@@ -98,6 +99,16 @@
         newItemName = string.Empty;
         newItemPrice = 0;
     }
+
+    private void RemoveItem(ResturantManagmentSystem.Components.MenuItem item)
+    {
+    // Remove the item from the database using its ID
+    dbHelper.DeleteMenuItem(item.ItemId);
+
+    // Reload the menu items to reflect the change
+    menuItems = dbHelper.GetMenuItems();
+    }
+
 
     // This method is to enable edditing to an item in the database by setting the property to true.
     private void EditItem(ResturantManagmentSystem.Components.MenuItem item)
