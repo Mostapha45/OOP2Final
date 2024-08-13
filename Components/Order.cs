@@ -1,42 +1,30 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace ResturantManagmentSystem.Components
 {
-    internal class MenuItem
+    internal class Order
     {
-        // Property to store the ID of the menu item
-        public int ItemId { get; set; }
+        // get or set the orderid for the Order
+        public int OrderId { get; set; }
+        //get or set the tablenumber
+        public int TableNumber { get; set; }
+        // Name of the customer
+        public string CustomerName { get; set; }
+        // List of menu items with the order
+        public List<string> Items { get; set; }
 
-        // Property to store the name of the menu item
-        public string Name { get; set; }
-
-        // Property to store the cost of the menu item
-        public double Cost { get; set; }
-
-        // Property to store the description of the menu item
-        public string Description { get; set; }
-
-        // Property to track whether the menu item is being edited
-        public bool IsEditing { get; set; }
-
-        // Constructor to initialize a menuitem object with specific values, setting isediting to false by default
-        public MenuItem(int itemId, string name, double cost, string description)
+        // initializes an order object with provided values
+        public Order(int orderId, int tableNumber, string customerName, List<string> items)
         {
-            ItemId = itemId;
-            Name = name;
-            Cost = cost;
-            Description = description;
-            IsEditing = false;
+            // Assigning values
+            OrderId = orderId;
+            TableNumber = tableNumber;
+            CustomerName = customerName;
+            Items = items;
         }
 
-        // initializes a menuitem object with default values, setting isediting to false
-        public MenuItem()
+        // Default constructor
+        public Order()
         {
-            IsEditing = false;
+            Items = new List<string>();
         }
     }
 }
