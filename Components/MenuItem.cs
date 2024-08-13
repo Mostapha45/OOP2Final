@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,24 +8,24 @@ namespace ResturantManagmentSystem.Components
 {
     internal class MenuItem
     {
-        // Properties to store information about the menu item.
-
-        // Here we get or set the OrderId for the Menu item 
+        // Property to store the ID of the menu item
         public int ItemId { get; set; }
-        // Name of the menu item.
+
+        // Property to store the name of the menu item
         public string Name { get; set; }
-        // Cost of the menu item.
+
+        // Property to store the cost of the menu item
         public double Cost { get; set; }
-        // Description of the menu item.
+
+        // Property to store the description of the menu item
         public string Description { get; set; }
-        
-        // Create a isEditing property to see if the MenuItem is being editied
+
+        // Property to track whether the menu item is being edited
         public bool IsEditing { get; set; }
 
-        // Constructor to initialize a MenuItem object with provided values intially setting IsEditing to false.
+        // Constructor to initialize a menuitem object with specific values, setting isediting to false by default
         public MenuItem(int itemId, string name, double cost, string description)
         {
-            // Assigning values to the properties.
             ItemId = itemId;
             Name = name;
             Cost = cost;
@@ -33,7 +33,7 @@ namespace ResturantManagmentSystem.Components
             IsEditing = false;
         }
 
-        // Default constructor for MenuItem.
+        // initializes a menuitem object with default values, setting isediting to false
         public MenuItem()
         {
             IsEditing = false;
