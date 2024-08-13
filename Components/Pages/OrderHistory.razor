@@ -1,4 +1,19 @@
-﻿@page "/order-history"
+@*
+Authors:
+Mostapha
+Jacob
+Noah
+Anton
+
+Version: 2024-08-12
+
+Description: This page displays the order history for the restaurant management system
+It allows users to view past orders, including details like order ID, table number, customer name, and items ordered
+The page also provides functionality to remove orders from the history and navigate back to the order creation page
+
+*@
+
+@page "/order-history"
 @using ResturantManagmentSystem.Components
 @inject NavigationManager NavigationManager
 
@@ -40,26 +55,30 @@ else
 <button @onclick="NavigateBack">Back</button>
 
 @code {
-    // Here we call the orderHistory list which recieves the Order history items from the database
+    // List to store order history items retrieved from the DB
     private List<OrderHistoryItem> orderHistory;
 
+    // Loads order history from the database when initialized
     protected override void OnInitialized()
     {
         var dbHelper = new DatabaseHelper("ResturantDB");
         orderHistory = dbHelper.GetOrderHistory();
+        orderHistory = dbHelper.GetOrderHistory();
     }
 
-    //Here we remove an order from the order history using the order id, we then refresh the list by getting the new order history from the databse.
+    // Removes an order from the order history and appends the list
     private void RemoveOrder(int orderId)
     {
         var dbHelper = new DatabaseHelper("ResturantDB");
         dbHelper.DeleteOrderHistory(orderId);
-        orderHistory = dbHelper.GetOrderHistory(); 
+        orderHistory = dbHelper.GetOrderHistory();
+        orderHistory = dbHelper.GetOrderHistory();
     }
 
-    // Here we set it up so there is functionallity for the back button that is shown when viewing order history to go back to the order creating page.
+    // Navigates back to the order creation page
     private void NavigateBack()
     {
+        NavigationManager.NavigateTo("/create-order");
         NavigationManager.NavigateTo("/create-order");
     }
 }
