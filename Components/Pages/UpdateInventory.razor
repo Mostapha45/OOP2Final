@@ -1,4 +1,20 @@
-﻿@page "/update-inventory"
+@*
+    Authors:
+    Mostapha
+    Jacob
+    Noah
+    Anton
+
+    Version: 2024-08-12
+
+    Description:
+    This page manages the restaurant's inventory by allowing users to add, edit, and remove menu items.
+    It ensures item names are non numeric and prices are valid through validation.
+    Error messages guide users to correct mistakes, maintaining data integrity.
+    The page connects to a SQLite database to keep the inventory current.
+*@
+
+@page "/update-inventory"
 @using ResturantManagmentSystem.Components
 
 <h1>Update Inventory</h1>
@@ -8,9 +24,17 @@
     <div class="add-item-form">
         <label for="itemName">Item Name:</label>
         <input id="itemName" @bind="newItemName" />
+        @if (!string.IsNullOrEmpty(nameErrorMessage))
+        {
+            <p style="color: red;">@nameErrorMessage</p>
+        }
 
         <label for="itemPrice">Item Price:</label>
         <input id="itemPrice" type="number" @bind="newItemPrice" />
+        @if (!string.IsNullOrEmpty(priceErrorMessage))
+        {
+            <p style="color: red;">@priceErrorMessage</p>
+        }
 
         <button @onclick="AddNewItem">Add Item</button>
     </div>
@@ -62,24 +86,30 @@
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
-        margin-bottom: 30px; /* Add space between Add New Item form and Modify Existing Items section */
+        margin-bottom: 30px;
     }
 
     .table th, .table td {
         padding: 10px;
     }
+
+    p {
+        margin: 0;
+    }
 </style>
 
-
-
-
 @code {
-    //newItemName and NewItemPrice are variables that hold the values entered in the page when creating new items.
-    // We then call the menuItems list to see the current items that are fetched from the database
+    // Fields to store the item name, price, and error messages
+
     private string newItemName;
     private double newItemPrice;
+    private string nameErrorMessage;
+    private string priceErrorMessage;
+    private string duplicateItemErrorMessage;
     private List<ResturantManagmentSystem.Components.MenuItem> menuItems = new List<ResturantManagmentSystem.Components.MenuItem>();
     private DatabaseHelper dbHelper;
+
+    // Initialize the dbHelper and fetch existing menu items from the DB
 
     protected override void OnInitialized()
     {
@@ -87,49 +117,98 @@
         menuItems = dbHelper.GetMenuItems();
     }
 
+    // Method to add a new item to the DB if conditions are met
+
     private void AddNewItem()
     {
-        // Here we add a new item to our database
-        dbHelper.AddMenuItem(newItemName, newItemPrice, string.Empty); // Here we assume that the string is empty for simplicity 
+        // Check if the item name is empty or a number and the price is zero or less
+        if (string.IsNullOrEmpty(newItemName) || double.TryParse(newItemName, out _) || newItemPrice <= 0)
+        {
+            if (string.IsNullOrEmpty(newItemName))
+            {
+                nameErrorMessage = "Name can't be null.";
+            }
+            else if (double.TryParse(newItemName, out _))
+            {
+                nameErrorMessage = "Name can't be a number.";
+            }
+            else
+            {
+                nameErrorMessage = null;
+            }
 
-        // Here we reload the menu items
+            if (newItemPrice <= 0)
+            {
+                priceErrorMessage = "Price must be greater than 0.";
+            }
+            else
+            {
+                priceErrorMessage = null;
+            }
+            return;
+        }
+
+        // Check if the item already exists
+        if (menuItems.Any(item => item.Name.Equals(newItemName, StringComparison.OrdinalIgnoreCase)))
+        {
+            duplicateItemErrorMessage = "Item already exists.";
+            return;
+        }
+        else
+        {
+            duplicateItemErrorMessage = null;
+        }
+
+        // Clear error messages when input is valid
+        nameErrorMessage = null;
+        priceErrorMessage = null;
+
+        // Add the item to the DB
+
+        dbHelper.AddMenuItem(newItemName, newItemPrice, string.Empty);
+
+        // Reload the menu items
         menuItems = dbHelper.GetMenuItems();
 
-        // Reset form
+        // Reset the form
         newItemName = string.Empty;
         newItemPrice = 0;
     }
 
+    // Method to remove an item from the DB and update the UI
+
     private void RemoveItem(ResturantManagmentSystem.Components.MenuItem item)
     {
-    // Remove the item from the database using its ID
-    dbHelper.DeleteMenuItem(item.ItemId);
+        // Remove the item from the DB
 
-    // Reload the menu items to reflect the change
-    menuItems = dbHelper.GetMenuItems();
+        dbHelper.DeleteMenuItem(item.ItemId);
+
+        // Reload the menu items to show the change
+        menuItems = dbHelper.GetMenuItems();
     }
 
-
-    // This method is to enable edditing to an item in the database by setting the property to true.
+    // Method to enable editing for an item
     private void EditItem(ResturantManagmentSystem.Components.MenuItem item)
     {
         item.IsEditing = true;
     }
 
-    // Here we save the updated item to the databse
+    // Method to save an edited item to the database and update the UI
     private void SaveItem(ResturantManagmentSystem.Components.MenuItem item)
     {
-        // Here is where we update an item in the database
+        // Update the item in the DB
+
         dbHelper.UpdateMenuItem(item.ItemId, item.Name, item.Cost, item.Description);
 
-        // End edit mode by setting the property to false
+        // End edit mode
         item.IsEditing = false;
 
-        // Reload menu items to update the changes
+        // Reload menu items to reflect the update
+
         menuItems = dbHelper.GetMenuItems();
     }
 
-    //Here we create a method to cancel the edit by changing the isEditing propert to false, if needed and not update the changes.
+    // Method to cancel editing mode and discard changes
 
     private void CancelEdit(ResturantManagmentSystem.Components.MenuItem item)
     {
@@ -137,13 +216,3 @@
         menuItems = dbHelper.GetMenuItems(); // Reload items to discard changes
     }
 }
-
-<style>
-    .title-spacing {
-        margin-bottom: 20px;
-    }
-
-    .table th, .table td {
-        padding: 10px;
-    }
-</style>
