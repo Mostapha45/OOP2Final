@@ -1,30 +1,42 @@
-﻿namespace ResturantManagmentSystem.Components
-{
-    internal class Order
-    {
-        // Here we get or set the OrderId for the Order.
-        public int OrderId { get; set; }
-        // Here we get or set the TableNumber 
-        public int TableNumber { get; set; }
-        // Name of the customer.
-        public string CustomerName { get; set; }
-        // List of menu items associated with the order.
-        public List<string> Items { get; set; }
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-        // Constructor to initialize an Order object with provided values.
-        public Order(int orderId, int tableNumber, string customerName, List<string> items)
+namespace ResturantManagmentSystem.Components
+{
+    internal class MenuItem
+    {
+        // Property to store the ID of the menu item
+        public int ItemId { get; set; }
+
+        // Property to store the name of the menu item
+        public string Name { get; set; }
+
+        // Property to store the cost of the menu item
+        public double Cost { get; set; }
+
+        // Property to store the description of the menu item
+        public string Description { get; set; }
+
+        // Property to track whether the menu item is being edited
+        public bool IsEditing { get; set; }
+
+        // Constructor to initialize a menuitem object with specific values, setting isediting to false by default
+        public MenuItem(int itemId, string name, double cost, string description)
         {
-            // Assigning values to the properties.
-            OrderId = orderId;
-            TableNumber = tableNumber;
-            CustomerName = customerName;
-            Items = items;
+            ItemId = itemId;
+            Name = name;
+            Cost = cost;
+            Description = description;
+            IsEditing = false;
         }
 
-        // Default constructor for Order.
-        public Order()
+        // initializes a menuitem object with default values, setting isediting to false
+        public MenuItem()
         {
-            Items = new List<string>();
+            IsEditing = false;
         }
     }
 }
