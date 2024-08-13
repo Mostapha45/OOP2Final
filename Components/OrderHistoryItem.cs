@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,26 +8,26 @@ namespace ResturantManagmentSystem.Components
 {
     internal class OrderHistoryItem
     {
-        // Here we get or set the OrderId for the item 
+        //get or set the orderid for the item 
         public int OrderId { get; set; }
-        // Here we get or set the TableNumber 
+        //get or set the tablenuber 
         public int TableNumber { get; set; }
-        // Here we get or set the name of the customer.
+        // get or set the name of the customer
         public string CustomerName { get; set; }
-        // List of menu items associated with the order.
+        // List of menu items with the order
         public List<string> Items { get; set; }
 
-        // Constructor to initialize an OrderHistoryItem object with provided values.
+        // initializes an OrderHistoryItem object with the below values
         public OrderHistoryItem(int orderId, int tableNumber, string customerName, List<string> items)
         {
-            // Assigning values to the properties.
+            // Assigning values
             OrderId = orderId;
             TableNumber = tableNumber;
             CustomerName = customerName;
             Items = items;
         }
 
-        // Default constructor for OrderHistoryItem.
+        // Default constructor
         public OrderHistoryItem()
         {
             Items = new List<string>();
