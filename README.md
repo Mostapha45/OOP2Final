@@ -1,6 +1,6 @@
 This is the final project for OOP2
 
-I have created a Resturant Managment System for Great Burger.
+We have created a Resturant Managment System for Great Burger.
 In this ReadMe we will explain the project functionality
 
 Firstly, for the Orders the following problems have been solved and now can be completed.
@@ -39,3 +39,9 @@ In this application we help the Resturant with multiple managment issues. By usi
 As well as having an updated and modern GUI which will allow for ease of use and easy adaptation into the enviorment.
 
 This will allow the resturant to function with more efficency and providing better service overall to their customers and resulting in increased profits and a better reputation.
+
+Authors: 
+Mostapaha
+Jacob
+Noah
+Anton
